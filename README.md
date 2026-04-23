@@ -11,29 +11,31 @@ A semantic book recommendation engine that finds books similar to ones you love,
 
 ## Architecture
 
+ ```                                                                                                  
   Google Books API
-        │
-        ▼
+         │                                                                                             
+         ▼                                
   Async Ingestion Pipeline
-  (rate limiting, pagination, deduplication,checkpointing)
-        │
-        ▼
-  sentence-transformers (all-MiniLM-L6-v2)
-  (local embedding model, no API cost)
-        │
-        ▼
-  Qdrant Vector DB (local persistence)
-  (HNSW index, cosine similarity, payload filtering)
-        │                          ▲
-        ▼                          │ taste vector
-  FastAPI Backend          SQLite (ratings)
-    ├── /api/recommend     Taste Profile Service
-    ├── /api/discover      (liked centroid − 0.5 × disliked centroid)
-    ├── /api/rate
-    └── /api/explain  →  Claude API (similarity explanation)
-        │
-        ▼
-  Next.js Frontend
+         │  rate limiting, pagination, dedup, checkpointing                                            
+         ▼
+  sentence-transformers (all-MiniLM-L6-v2)                                                             
+         │  local embeddings, no API cost 
+         ▼
+  Qdrant Vector DB                                                                                     
+         │  HNSW index, cosine similarity, local persistence
+         ▼                                                                                             
+  FastAPI Backend                         
+  ├── POST /api/recommend   →  vector search + Claude explanation
+  ├── POST /api/rate        →  saves to SQLite                                                         
+  ├── GET  /api/discover    →  taste vector search
+  └── POST /api/explain     →  Claude API                                                              
+         │                                                                                             
+         ▼                                                                                             
+  Next.js Frontend (work in progress)                                                                  
+                                                                                                       
+  Taste Profile (SQLite → ratings → taste vector → Qdrant)
+  liked centroid − 0.5 × disliked centroid                                                             
+  ```  
 
 ## Tech Stack
 
