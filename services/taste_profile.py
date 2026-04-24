@@ -5,14 +5,15 @@ from db.ratings import get_ratings
 from vectordb.client import COLLECTION_NAME
 from services.recommender import get_book_by_title, find_similar_books
 
+
 def compute_taste_vector(client: QdrantClient) -> list[float] | None:
     ratings = get_ratings()
 
     if not ratings:
         return None
-    
-    liked = [r for r in ratings if r['rating'] == 1]
-    disliked = [r for r in ratings if r['rating'] == -1]
+
+    liked = [r for r in ratings if r["rating"] == 1]
+    disliked = [r for r in ratings if r["rating"] == -1]
 
     liked_vectors = []
     disliked_vectors = []
@@ -29,7 +30,7 @@ def compute_taste_vector(client: QdrantClient) -> list[float] | None:
 
     if not liked_vectors:
         return None
-    
+
     taste_vector = np.mean(liked_vectors, axis=0)
 
     if disliked_vectors:
@@ -38,14 +39,17 @@ def compute_taste_vector(client: QdrantClient) -> list[float] | None:
 
     return taste_vector.tolist()
 
+
 def discover_books(client: QdrantClient, limit: int = 5) -> list[dict]:
     taste_vector = compute_taste_vector(client)
 
     if taste_vector is None:
         return []
-    
-    return find_similar_books(
-        query_vector=taste_vector,
-        client=client,
-        limit=limit
+    ratings = get_ratings()
+    rated_titles = {r["title"].lower() for r in ratings}
+
+    results = find_similar_books(
+        query_vector=taste_vector, client=client, limit=limit + len(rated_titles)
     )
+
+    return [b for b in results if b["title"].lower() not in rated_titles][:limit]

@@ -31,16 +31,17 @@ def find_similar_books(
     exclude_title: str = None,
     limit: int = 5,
 ) -> list[dict]:
-    results = client.search(
-        collection_name=COLLECTION_NAME, query_vector=query_vector, limit=limit + 3
-    )
+    results = client.query_points(
+        collection_name=COLLECTION_NAME, query=query_vector, limit=limit + 10
+    ).points
 
     books = []
     for result in results:
         payload = result.payload
         if exclude_title and payload["title"].lower() == exclude_title.lower():
             continue
-        books.append({**payload, "score": result.score})
+        if result.score >= 0.4:
+            books.append({**payload, "score": result.score})
 
     return books[:limit]
 

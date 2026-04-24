@@ -1,12 +1,23 @@
 import anthropic
+import instructor
 import os
+from pydantic import BaseModel
 from dotenv import load_dotenv
 
 load_dotenv()
 
-def explain_similarity(book_a: dict, book_b: dict) -> dict:
-    client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+client = instructor.from_anthropic(
+    anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+)
 
+
+class BookExplanation(BaseModel):
+    similar: list[str]
+    different: list[str]
+    recommended_because: str
+
+
+def explain_similarity(book_a: dict, book_b: dict) -> dict:
     prompt = f"""You are a literary analyst. A user liked "{book_a['title']}" and I recommended "{book_b['title']}".
 
     Book A - {book_a['title']} by {', '.join(book_a['authors'])}:
@@ -15,19 +26,14 @@ def explain_similarity(book_a: dict, book_b: dict) -> dict:
     Book B - {book_b['title']} by {', '.join(book_b['authors'])}:
     {book_b['description']}
 
-    Respond with a JSON object in this exact structure, no other text:                                  
-    {{
-      "similar": ["point 1", "point 2", "point 3"],                                                   
-      "different": ["point 1", "point 2", "point 3"],
-      "recommended_because": "one sentence explanation"
-    }}
+    Explain what makes these books similar and different
     """
 
-    message = client.messages.create(
+    explanation = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=400,
-        messages=[{"role": "user", "content": prompt}]
+        max_tokens=600,
+        messages=[{"role": "user", "content": prompt}],
+        response_model=BookExplanation,
     )
 
-    import json
-    return json.loads(message.content[0].text)
+    return explanation.model_dump()
