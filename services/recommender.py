@@ -38,7 +38,7 @@ def find_similar_books(
     books = []
     for result in results:
         payload = result.payload
-        if exclude_title and payload["title"].lower() == exclude_title.lower():
+        if exclude_title and exclude_title.lower() in payload["title"].lower():
             continue
         if result.score >= 0.4:
             books.append({**payload, "score": result.score})
@@ -80,7 +80,7 @@ async def get_or_fetch_books(
     from vectordb.client import upsert_books
 
     upsert_books(client, [book_data])
-    print(f"Stored '{book_data['title']} in Qdrant for future lookups")
+    print(f"Stored '{book_data['title']}' in Qdrant for future lookups")
 
     book_data["vector"] = embedding
     return book_data
