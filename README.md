@@ -1,4 +1,4 @@
-# Book Recommender
+# ShelfSense
 
 A semantic book recommendation engine that finds books similar to ones you love, explains *why* they're similar, and learns your taste over time through thumbs up/down feedback.
 

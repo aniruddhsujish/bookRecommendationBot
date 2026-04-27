@@ -87,7 +87,7 @@ export default function Home() {
         <main className="min-h-screen bg-gray-50">
             <div className="max-w-4xl mx-auto px-6 py-16">
                 <h1 className="text-4x1 font-bold text-gray-900 mb-2">
-                    Book Recommender
+                    ShelfSense
                 </h1>
                 <p className="text-gray-500 mb-12">
                     Find books similar to ones you love
